@@ -1,4 +1,8 @@
+import 'package:discorev/models/custom_colors.dart';
+import 'package:discorev/screens/candidates/announce_list.dart';
 import 'package:flutter/material.dart';
+
+import '../screens/home.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -15,6 +19,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
       _selectedIndex = index;
     });
   }
+
+  // Une liste des pages qui doivent afficher la navbar
+  final List<Widget> _pagesWithNavBar = [
+    const HomePage(),
+    const AnnounceList(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +55,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
       ],
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,
-      selectedItemColor: Colors.orangeAccent.shade100, // Couleur des éléments sélectionnés
-      unselectedItemColor: Colors.black, // Couleur des éléments non sélectionnés
+      selectedItemColor: CustomColors.primaryColorBlue, // Couleur des éléments sélectionnés
+      unselectedItemColor: CustomColors.tertiaryColorWhite, // Couleur des éléments non sélectionnés
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:discorev/models/custom_colors.dart';
+import 'package:discorev/screens/auth/register.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
@@ -15,16 +17,15 @@ class LoginPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/discorev.png', // Ajoutez l'adresse de votre logo ici
-              width: 150,
-              height: 150,
+              'assets/discorev.png',
+              width: 200,
             ),
             const SizedBox(height: 20),
             const TextField(
               decoration: InputDecoration(
                 hintText: 'E-mail',
                 prefixIcon: Icon(Icons.person),
-                focusColor: Colors.orangeAccent
+                focusColor: CustomColors.primaryColorYellow
               ),
             ),
             const SizedBox(height: 20),
@@ -41,7 +42,8 @@ class LoginPage extends StatelessWidget {
               children: [
                 TextButton(
                   onPressed: () {
-                    // Naviguer vers la page de création de compte
+                    Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) => const RegisterPage()));
                   },
                   child: const Text('Créer un compte',
                     style: TextStyle(color: Colors.orangeAccent),),

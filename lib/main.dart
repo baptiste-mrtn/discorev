@@ -1,191 +1,80 @@
-import 'package:discorev/auth/login.dart';
+import 'package:discorev/models/custom_colors.dart';
+import 'package:discorev/screens/auth/login.dart';
+import 'package:discorev/screens/intro.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'home.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'navbar.dart'; // Importez le fichier bottom_nav_bar.dart
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+Future<void> main() async {
   // Bloquer l'orientation en mode portrait uniquement
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  runApp(const MyApp());
+  // Premier lancement
+  final prefs = await SharedPreferences.getInstance();
+  bool isFirstRun = prefs.getBool('isFirstRun') ?? true;
+  if (isFirstRun) {
+    await prefs.setBool('isFirstRun', false);
+  }
+  runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isFirstLaunch = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFirstLaunch();
+  }
+
+  Future<void> _checkFirstLaunch() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? isFirstLaunch = prefs.getBool('isFirstLaunch');
+    if (isFirstLaunch == null || isFirstLaunch == true) {
+      await prefs.setBool('isFirstLaunch', false);
+      setState(() {
+        _isFirstLaunch = true;
+      });
+    } else {
+      setState(() {
+        _isFirstLaunch = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        // Définir les couleurs par défaut pour les boutons et les liens
-        primaryColor: Colors.orange,
-        // Couleur principale pour les boutons et les liens
-        hintColor: Colors.black54,
-        // Couleur accentuée pour les boutons et les liens
-        // Définir les couleurs par défaut pour les champs de texte
-        textSelectionTheme: TextSelectionThemeData(
-          cursorColor: Colors.orange,
-          // Couleur du curseur dans les champs de texte
-          selectionColor: Colors.orange.withOpacity(0.4),
-          // Couleur de la sélection dans les champs de texte
-          selectionHandleColor: Colors
-              .orangeAccent, // Couleur des poignées de sélection dans les champs de texte
-        ),
-        inputDecorationTheme: const InputDecorationTheme(
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-                color: Colors.orange), // Couleur de la bordure en focus
+          primaryColor: CustomColors.primaryColorYellow,
+          hintColor: Colors.black54,
+          textSelectionTheme: TextSelectionThemeData(
+            cursorColor: Theme.of(context).primaryColor,
+            selectionColor: Theme.of(context).primaryColor.withOpacity(0.4),
+            selectionHandleColor: Theme.of(context).primaryColor,
           ),
-          // Autres paramètres de thème...
-        ),
-      ),
-      home: const MainScreen(),
+          inputDecorationTheme: const InputDecorationTheme(
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: CustomColors.secondaryColorBlue),
+              ),
+              focusColor: CustomColors.primaryColorBlue),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+            textStyle: const TextStyle(
+              color: CustomColors.tertiaryColorWhite,
+            ),
+            backgroundColor: CustomColors.primaryColorYellow,
+                foregroundColor: CustomColors.tertiaryColorWhite
+          ))),
+      home: _isFirstLaunch ? const Intro() : const LoginPage(),
     );
-  }
-}
-
-class MainScreen extends StatelessWidget {
-  const MainScreen({super.key});
-
-  void navigateTo(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const HomePage()));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Discorev',
-          style: GoogleFonts.baloo2(
-            fontSize: 25,
-            // Taille de la police
-            fontWeight: FontWeight.bold,
-            // Poids de la police (normal, bold, etc.)
-            fontStyle: FontStyle.normal, // Style de la police (normal, italic)
-            // Vous pouvez également définir d'autres propriétés de style ici
-          ),
-        ),
-        backgroundColor: Colors.orangeAccent.shade100,
-      ),
-      backgroundColor: Colors.orangeAccent.shade100,
-      body: Center(
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Vous êtes un ',
-            style: GoogleFonts.baloo2(
-              fontSize: 25,
-              // Taille de la police
-              fontWeight: FontWeight.bold,
-              // Poids de la police (normal, bold, etc.)
-              fontStyle:
-                  FontStyle.normal, // Style de la police (normal, italic)
-              // Vous pouvez également définir d'autres propriétés de style ici
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(height: 20),
-        OrientationBuilder(builder: (context, orientation) {
-          return orientation == Orientation.portrait
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: buildIcons(context),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: buildIcons(context),
-                );
-        })
-      ])),
-      bottomNavigationBar: BottomNavBar(), // Utilisez BottomNavBar ici
-    );
-  }
-
-  // Fonction pour construire les icônes
-  List<Widget> buildIcons(BuildContext context) {
-    return [
-      SquareIcon(
-          icon: Icons.agriculture,
-          label: "Artisan",
-          onPressed: () => navigateTo(context)),
-      const SizedBox(height: 20),
-      SquareIcon(
-        icon: Icons.family_restroom,
-        label: "Parent",
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const LoginPage(),
-            ),
-          );
-        },
-      ),
-      const SizedBox(height: 20),
-      SquareIcon(
-        icon: Icons.location_city,
-        label: "Etablissement",
-        onPressed: () => {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const HomePage(),
-            ),
-          )
-        },
-      ),
-    ];
-  }
-}
-
-class SquareIcon extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onPressed;
-  final String label;
-
-  const SquareIcon(
-      {super.key,
-      required this.icon,
-      required this.label,
-      required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: onPressed,
-        child: Column(children: [
-          Container(
-            width: 150,
-            height: 150,
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.black, width: 5),
-                borderRadius: const BorderRadius.all(Radius.circular(20))),
-            child: Icon(
-              icon,
-              size: 100,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: GoogleFonts.baloo2(
-              fontSize: 16,
-              // Taille de la police
-              fontWeight: FontWeight.bold,
-              // Poids de la police (normal, bold, etc.)
-              fontStyle:
-                  FontStyle.normal, // Style de la police (normal, italic)
-              // Vous pouvez également définir d'autres propriétés de style ici
-            ),
-          ),
-        ]));
   }
 }
