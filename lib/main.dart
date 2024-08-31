@@ -1,25 +1,11 @@
 import 'package:discorev/models/custom_colors.dart';
-import 'package:discorev/screens/auth/login.dart';
-import 'package:discorev/screens/intro.dart';
+import 'package:discorev/providers/auth.dart';
+import 'package:discorev/screens/auth/choice_account_type_screen.dart';
+import 'package:discorev/screens/home_screen.dart';
+import 'package:discorev/widgets/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-Future<void> main() async {
-  // Bloquer l'orientation en mode portrait uniquement
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-  // Premier lancement
-  final prefs = await SharedPreferences.getInstance();
-  bool isFirstRun = prefs.getBool('isFirstRun') ?? true;
-  if (isFirstRun) {
-    await prefs.setBool('isFirstRun', false);
-  }
-  runApp(MyApp());
-}
 
 class MyApp extends StatefulWidget {
   @override
@@ -52,29 +38,89 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-          primaryColor: CustomColors.primaryColorYellow,
-          hintColor: Colors.black54,
-          textSelectionTheme: TextSelectionThemeData(
-            cursorColor: Theme.of(context).primaryColor,
-            selectionColor: Theme.of(context).primaryColor.withOpacity(0.4),
-            selectionHandleColor: Theme.of(context).primaryColor,
-          ),
-          inputDecorationTheme: const InputDecorationTheme(
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: CustomColors.secondaryColorBlue),
-              ),
-              focusColor: CustomColors.primaryColorBlue),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-            textStyle: const TextStyle(
-              color: CustomColors.tertiaryColorWhite,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+      ],
+      child: Consumer<AuthProvider>(
+        builder: (context, auth, _) {
+          return MaterialApp(
+            theme: ThemeData(
+                primaryColor: CustomColors.primaryColorYellow,
+                hintColor: Colors.black54,
+                textSelectionTheme: TextSelectionThemeData(
+                  cursorColor: Theme.of(context).primaryColor,
+                  selectionColor:
+                  Theme.of(context).primaryColor.withOpacity(0.4),
+                  selectionHandleColor: Theme.of(context).primaryColor,
+                ),
+                inputDecorationTheme: const InputDecorationTheme(
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide:
+                      BorderSide(color: CustomColors.secondaryColorBlue),
+                    ),
+                    focusColor: CustomColors.primaryColorBlue),
+                elevatedButtonTheme: ElevatedButtonThemeData(
+                    style: ElevatedButton.styleFrom(
+                        textStyle: const TextStyle(
+                          color: CustomColors.tertiaryColorWhite,
+                        ),
+                        backgroundColor: CustomColors.primaryColorYellow,
+                        foregroundColor: CustomColors.tertiaryColorWhite))),
+            home: _isFirstLaunch
+                ? SplashScreenWrapper(
+              child: ChoiceAccountTypeScreen(),
+            )
+                : SplashScreenWrapper(
+              child: HomeScreen(),
             ),
-            backgroundColor: CustomColors.primaryColorYellow,
-                foregroundColor: CustomColors.tertiaryColorWhite
-          ))),
-      home: _isFirstLaunch ? const Intro() : const LoginPage(),
+          );
+        },
+      ),
     );
   }
+}
+
+class SplashScreenWrapper extends StatefulWidget {
+  final Widget child;
+
+  SplashScreenWrapper({required this.child});
+
+  @override
+  _SplashScreenWrapperState createState() => _SplashScreenWrapperState();
+}
+
+class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      setState(() {
+        _isLoading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final widgetWidth = screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 1;
+
+    if (_isLoading) {
+      return SplashScreen();
+    } else {
+      return Center(
+        child: SizedBox(
+          width: widgetWidth,
+          child: widget.child,
+        ),
+      );
+    }
+  }
+}
+
+void main() {
+  runApp(MyApp());
 }

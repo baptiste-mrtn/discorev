@@ -1,31 +1,37 @@
 import 'package:discorev/models/custom_colors.dart';
-import 'package:discorev/screens/candidates/announce_list.dart';
 import 'package:flutter/material.dart';
 
-import '../screens/home.dart';
+import '../screens/candidate/announce_list_screen.dart';
+import '../screens/home_screen.dart';
 
-class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+class BottomNavbar extends StatefulWidget {
+  final int accountType;
+
+  BottomNavbar({required this.accountType});
 
   @override
-  _BottomNavBarState createState() => _BottomNavBarState();
+  _BottomNavbarState createState() => _BottomNavbarState();
 }
 
-class _BottomNavBarState extends State<BottomNavBar> {
+class _BottomNavbarState extends State<BottomNavbar> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) =>
+            HomeScreen(accountType: widget.accountType,)),
+      );
     });
   }
 
   // Une liste des pages qui doivent afficher la navbar
   final List<Widget> _pagesWithNavBar = [
-    const HomePage(),
-    const AnnounceList(),
+    HomeScreen(),
+    const AnnounceListScreen(),
   ];
-
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(

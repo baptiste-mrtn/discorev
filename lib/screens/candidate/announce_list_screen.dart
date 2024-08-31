@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
-class AnnounceList extends StatefulWidget {
-  const AnnounceList({Key? key}) : super(key: key);
+class AnnounceListScreen extends StatefulWidget {
+  const AnnounceListScreen({Key? key}) : super(key: key);
 
   @override
-  _AnnounceListState createState() => _AnnounceListState();
+  _AnnounceListScreenState createState() => _AnnounceListScreenState();
 }
 
-class _AnnounceListState extends State<AnnounceList> {
+class _AnnounceListScreenState extends State<AnnounceListScreen> {
   final CardSwiperController controller = CardSwiperController();
 
   @override
