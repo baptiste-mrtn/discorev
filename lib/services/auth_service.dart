@@ -1,10 +1,16 @@
+import 'package:discorev/models/result_api.dart';
+import 'package:discorev/services/user_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'company_service.dart';
 import 'security_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthService {
   final SecurityService secureStorageService = SecurityService();
+  final CompanyService companyService = CompanyService();
+  final UserService userService = UserService();
 
   Future<void> loadEnv() async {
     await dotenv.load(fileName: ".env");
@@ -19,7 +25,7 @@ class AuthService {
     return '$apiUrl/auth';
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<ResultApi> login(String email, String password) async {
     final url = await baseUrl;
     final response = await http.post(
       Uri.parse('$url/login'),
@@ -29,38 +35,68 @@ class AuthService {
       body: jsonEncode({'email': email, 'password': password}),
     );
 
+    final message = jsonDecode(response.body)['message'];
+
     if (response.statusCode == 200) {
-      final token = response.headers['authorization'];
-      secureStorageService.saveToken(token!);
-      return true;
+      final data = jsonDecode(response.body);
+      String token = data['token'];
+      DateTime now = DateTime.now();
+      DateTime futureDate = now.add(const Duration(hours: 1));
+
+      secureStorageService.saveToken(token, futureDate);
+
+      userService.findOneBy(email);
+      print(token);
+      return ResultApi(success: true, message: message);
     } else {
-      print(response.statusCode);
-      print(response.body);
-      return false;
+      print('Erreur: ${response.statusCode}, $message');
+      return ResultApi(success: false, message: message);
     }
   }
 
-  Future<bool> register(String email, String password, String name, String surname, {required int roleId, int? companySiren}) async {
+  Future<ResultApi> register(String email, String password, String name, String surname, {required int roleId, String? companyName, int? companySiren, String? companyDescription, String? companySector}) async {
     final url = await baseUrl;
+    Map<String, dynamic> requestBody = {
+      'email': email,
+      'password': password,
+      'name': '$surname $name',
+      'role_id': roleId,
+      'company_id': 1
+    };
+
+    if (roleId == 2) {
+      if (companyName != null && companySiren != null) {
+        Map<String, dynamic> requestBodyCompany = {
+          'company_name': companyName,
+          'company_siren': companySiren,
+          'company_description': companyDescription,
+          'company_industry': companySector,
+        };
+        await companyService.addOne(requestBodyCompany).then((value) => {
+          // TODO: change value to response company_id
+          requestBody['company_id'] = 1
+        });
+      } else {
+        // Gérer l'erreur si les informations de l'entreprise sont manquantes
+        return ResultApi(success: false, message: "Company details are required for recruiters.");
+      }
+    }
+
     final response = await http.post(
       Uri.parse('$url/signup'),
       headers: {
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({
-        'email' : email,
-        'password' : password,
-        'name' : '$surname $name',
-        'role_id' : roleId,
-        'companySiren' : companySiren
-      })
+      body: jsonEncode(requestBody),
     );
 
+    final message = jsonDecode(response.body)['message'];
+
     if (response.statusCode == 201) {
-      return true;
+      return ResultApi(success: true, message: message);
     } else {
-      print('Erreur: ${response.statusCode}, ${response.body}');
-      return false;
+      print('Erreur: ${response.statusCode}, $message');
+      return ResultApi(success: false, message: message);
     }
   }
 
@@ -78,5 +114,17 @@ class AuthService {
     } else {
       return false;
     }
+  }
+
+  Future logout() async {
+    secureStorageService.deleteToken();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('authToken');
+    await prefs.remove('accountType');
+  }
+
+  Future<bool> isLogged() async {
+    String? token = await secureStorageService.readToken();
+    return token != null && token.isNotEmpty;
   }
 }

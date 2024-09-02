@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:discorev/models/result_api.dart';
 import 'package:discorev/services/security_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -23,10 +24,10 @@ class ApiService {
     return '$apiUrl$endpoint';
   }
 
-  Future<http.Response> getAllData() async {
+  Future<ResultApi> getAllData() async {
+    await secureStorageService.ensureTokenValid();
     final token = await secureStorageService.readToken();
 
-    // On attend le résultat de baseUrl, car c'est une Future.
     final url = await baseUrl;
 
     final response = await http.get(
@@ -47,7 +48,8 @@ class ApiService {
     }
   }
 
-  Future<http.Response> getOneData(int id) async {
+  Future<ResultApi> getOneData(int id) async {
+    await secureStorageService.ensureTokenValid();
     final token = await secureStorageService.readToken();
 
     final url = await baseUrl;
@@ -70,20 +72,42 @@ class ApiService {
     }
   }
 
-
-  Future<http.Response> updateOneData(int id, Object entity) async {
+  Future<ResultApi> getOneDataBy(String term) async {
+    await secureStorageService.ensureTokenValid();
     final token = await secureStorageService.readToken();
 
     final url = await baseUrl;
 
-    final response = await http.put(
-      Uri.parse('$url/$id'),
+    final response = await http.get(
+      Uri.parse('$url/$term'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
       },
-      body: entity
     );
+
+    print(json.decode(response.body));
+
+    if (response.statusCode == 200) {
+      print(json.decode(response.body));
+      return json.decode(response.body)['message'];
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<ResultApi> updateOneData(int id, Object entity) async {
+    await secureStorageService.ensureTokenValid();
+    final token = await secureStorageService.readToken();
+
+    final url = await baseUrl;
+
+    final response = await http.put(Uri.parse('$url/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: entity);
     print(json.decode(response.body));
 
     if (response.statusCode == 200) {
@@ -94,17 +118,18 @@ class ApiService {
     }
   }
 
-  Future<http.Response> deleteOneData(int id) async {
+  Future<ResultApi> deleteOneData(int id) async {
+    await secureStorageService.ensureTokenValid();
     final token = await secureStorageService.readToken();
 
     final url = await baseUrl;
 
     final response = await http.delete(
-        Uri.parse('$url/$id'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $token',
-        },
+      Uri.parse('$url/$id'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
     );
     print(json.decode(response.body));
 
@@ -116,27 +141,31 @@ class ApiService {
     }
   }
 
-  Future<http.Response> postData(Object data) async {
+  Future<ResultApi> postData(Object obj) async {
+    await secureStorageService.ensureTokenValid();
+
     final token = await secureStorageService.readToken();
-
     final url = await baseUrl;
+    final data = jsonEncode(obj);
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: data,
+      );
 
-    final response = await http.post(
-      Uri.parse('$url/'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(data),
-    );
-
-    print(response.body);
-
-    if (response.statusCode == 200) {
-      print(json.decode(response.body)['message']);
-      return response;
-    } else {
-      throw Exception('Failed to post data');
+      print(response.body);
+      if (response.statusCode == 200) {
+        print(json.decode(response.body)['message']);
+        return json.decode(response.body)['message'];
+      } else {
+        throw Exception('Failed to post data');
+      }
+    } catch (err) {
+      return ResultApi(success: false, message: '$err');
     }
   }
 }

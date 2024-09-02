@@ -1,30 +1,40 @@
+import 'dart:convert';
+
 import 'package:discorev/services/api_service.dart';
 import 'package:http/http.dart' as http;
+
+import '../models/result_api.dart';
 
 class JobService {
   ApiService apiService = ApiService(endpoint: '/jobs');
 
-  Future<http.Response> findAll() async {
-    final response = await apiService.getAllData();
-    return response;
+  Future<ResultApi> findAll() async {
+    try {
+      final response = await apiService.getAllData();
+      // Supposons que getAllData() retourne une réponse JSON sous forme de String
+      print(response);
+      return ResultApi(success: true, message: jsonDecode(response.message));
+    } catch (e) {
+      return ResultApi(success: false, message: e.toString());
+    }
   }
 
-  Future<http.Response> findOne(int id) async {
+  Future<ResultApi> findOne(int id) async {
     final response = await apiService.getOneData(id);
     return response;
   }
 
-  Future<http.Response> addOne(Object body) async {
+  Future<ResultApi> addOne(Object body) async {
     final response = await apiService.postData(body);
     return response;
   }
 
-  Future<http.Response> updateOne(int id, Object body) async {
+  Future<ResultApi> updateOne(int id, Object body) async {
     final response = await apiService.updateOneData(id, body);
     return response;
   }
 
-  Future<http.Response> deleteOne(int id, Object body) async {
+  Future<ResultApi> deleteOne(int id, Object body) async {
     final response = await apiService.deleteOneData(id);
     return response;
   }

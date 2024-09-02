@@ -1,13 +1,12 @@
-import 'package:discorev/models/custom_colors.dart';
 import 'package:flutter/material.dart';
-
 import '../screens/candidate/announce_list_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/recruiter/dashboard_screen.dart';
+import '../models/custom_colors.dart';
 
 class BottomNavbar extends StatefulWidget {
-  final int accountType;
-
-  BottomNavbar({required this.accountType});
+  final int initialIndex;
+  const BottomNavbar({super.key, this.initialIndex = 0});
 
   @override
   _BottomNavbarState createState() => _BottomNavbarState();
@@ -16,22 +15,52 @@ class BottomNavbar extends StatefulWidget {
 class _BottomNavbarState extends State<BottomNavbar> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) =>
-            HomeScreen(accountType: widget.accountType,)),
-      );
+
+      // Naviguer vers la page correspondante
+      switch (_selectedIndex) {
+        case 0:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+          break;
+        case 1:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AnnounceListScreen()),
+          );
+          break;
+        case 2:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          );
+          break;
+        case 3:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()), // Remplacez par l'écran de messages
+          );
+          break;
+        case 4:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()), // Remplacez par l'écran de profil
+          );
+          break;
+      }
     });
   }
 
-  // Une liste des pages qui doivent afficher la navbar
-  final List<Widget> _pagesWithNavBar = [
-    HomeScreen(),
-    const AnnounceListScreen(),
-  ];
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
@@ -57,12 +86,11 @@ class _BottomNavbarState extends State<BottomNavbar> {
           icon: Icon(Icons.person),
           label: 'Profil',
         ),
-        // Ajoutez d'autres éléments de la barre de navigation ici
       ],
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,
-      selectedItemColor: CustomColors.primaryColorBlue, // Couleur des éléments sélectionnés
-      unselectedItemColor: CustomColors.tertiaryColorWhite, // Couleur des éléments non sélectionnés
+      selectedItemColor: CustomColors.primaryColorYellow,
+      unselectedItemColor: CustomColors.secondaryColorBlue,
     );
   }
 }

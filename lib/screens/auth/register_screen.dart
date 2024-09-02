@@ -1,5 +1,6 @@
 import 'package:discorev/screens/auth/login_screen.dart';
 import 'package:discorev/services/auth_service.dart';
+import 'package:discorev/services/user_service.dart';
 import 'package:discorev/widgets/title_logo.dart';
 import 'package:flutter/material.dart';
 import '../../models/custom_colors.dart';
@@ -15,8 +16,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final authService = AuthService();
-  late int roleId;
+  final AuthService authService = AuthService();
+  final UserService userService = UserService();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -53,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         title: const Text('Inscription'),
       ),
-      body: SingleChildScrollView( // Ajout du SingleChildScrollView ici
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Center(
@@ -247,17 +248,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          final success = await authService.register(
+                          userService.setAccountType(widget.accountType);
+                          final response = await authService.register(
                             _emailController.text,
                             _passwordController.text,
                             _nameController.text,
                             _surnameController.text,
-                            roleId: roleId,
+                            roleId: widget.accountType,
+                            companyName: widget.accountType == 2
+                                ? _companyNameController.text
+                                : null,
                             companySiren: widget.accountType == 2
                                 ? int.tryParse(_companySirenController.text)
                                 : null,
+                            companyDescription: widget.accountType == 2
+                                ? _companyDescriptionController.text
+                                : null,
+                            companySector: widget.accountType == 2
+                                ? _selectedSector
+                                : null,
                           );
-                          if (success) {
+                          if (response.success) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 backgroundColor:
@@ -271,17 +282,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    HomeScreen(accountType: widget.accountType),
+                                    HomeScreen(),
                               ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 backgroundColor:
                                 CustomColors.tertiaryColorWhite,
                                 content: Text(
-                                  'Erreur lors de l\'inscription, veuillez réessayer',
-                                  style: TextStyle(color: Colors.red),
+                                  'Erreur lors de l\'inscription :\n${response.message}',
+                                  style: const TextStyle(color: Colors.red),
                                 ),
                               ),
                             );
@@ -295,9 +306,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onPressed: () {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (context) => LoginScreen(
-                              accountType: widget.accountType,
-                            ),
+                            builder: (context) => LoginScreen(),
                           ),
                         );
                       },

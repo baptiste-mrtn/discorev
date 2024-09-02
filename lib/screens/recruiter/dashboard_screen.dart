@@ -1,4 +1,9 @@
+import 'package:discorev/screens/recruiter/add_job_screen.dart';
+import 'package:discorev/widgets/bottom_navbar.dart';
+import 'package:discorev/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+
+import 'all_jobs_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String? jobTitle; // Si un job est disponible, sinon null
@@ -10,9 +15,8 @@ class DashboardScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-      ),
+      appBar: CustomAppBar(titleAppbar: 'Tableau de bord'),
+      bottomNavigationBar: const BottomNavbar(initialIndex: 2),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -21,6 +25,7 @@ class DashboardScreen extends StatelessWidget {
             Container(
               width: screenWidth,
               padding: const EdgeInsets.all(16.0),
+              height: 200,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15.0),
@@ -29,7 +34,7 @@ class DashboardScreen extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.5),
                     spreadRadius: 2,
                     blurRadius: 7,
-                    offset: Offset(0, 3), // décalage de l'ombre
+                    offset: const Offset(0, 3), // décalage de l'ombre
                   ),
                 ],
               ),
@@ -39,7 +44,7 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   Text(
                     jobTitle!,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
                     ),
@@ -55,11 +60,16 @@ class DashboardScreen extends StatelessWidget {
                 ],
               )
                   : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.add, size: 40, color: Colors.blue),
+                    icon: const Icon(Icons.add, size: 40, color: Colors.blue),
                     onPressed: () {
-                      // Logique pour ajouter un job
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const AddJobScreen(),
+                        ),
+                      );
                     },
                   ),
                   const Text(
@@ -73,38 +83,55 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            // Trois boutons espacés
+            // Boutons alignés verticalement en bas
             Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Logique pour "Toutes mes annonces"
-                      },
-                      child: const Text('Toutes mes annonces'),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: double.infinity, // Prend toute la largeur possible
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AllJobsScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text('Toutes mes annonces'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10), // Espacement entre les boutons
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Logique pour "Ajouter une annonce"
-                      },
-                      child: const Text('Ajouter une annonce'),
+                    const SizedBox(height: 10), // Espacement entre les boutons
+                    SizedBox(
+                      width: double.infinity, // Prend toute la largeur possible
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const AddJobScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text('Ajouter une annonce'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10), // Espacement entre les boutons
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Logique pour "Gestion des candidats"
-                      },
-                      child: const Text('Gestion des candidats'),
+                    const SizedBox(height: 10), // Espacement entre les boutons
+                    SizedBox(
+                      width: double.infinity, // Prend toute la largeur possible
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Logique pour "Gestion des candidats"
+                        },
+                        child: const Text('Gestion des candidats'),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
