@@ -158,9 +158,8 @@ class ApiService {
         body: data,
       );
 
-      if (response.statusCode == 200) {
-        print(json.decode(response.body)['message']);
-        return json.decode(response.body)['message'];
+      if (response.statusCode == 201) {
+        return ResultApi(success: true, message: json.decode(response.body)['message']);
       } else {
         throw Exception('Failed to post data');
       }

@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 backgroundColor: CustomColors.tertiaryColorWhite,
                                 content: Text(
                                   'Connexion réussie !',
-                                  style: TextStyle(color: CustomColors.primaryColorBlue),
+                                  style: TextStyle(color: Colors.green),
                                 ),
                               ),
                             );
@@ -96,7 +96,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Erreur lors de la connexion :\n${response.message}'),
+                                backgroundColor: CustomColors.tertiaryColorWhite,
+                                content: Text('Erreur lors de la connexion :\n${response.message}',
+                                  style: const TextStyle(color: Colors.red),),
                               ),
                             );
                           }

@@ -1,3 +1,4 @@
+import 'package:discorev/models/custom_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:discorev/services/job_service.dart';
 import 'package:discorev/screens/recruiter/dashboard_screen.dart';
@@ -82,7 +83,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
                     if (res.success) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Annonce ajoutée avec succès !'),
+                          backgroundColor: CustomColors.tertiaryColorWhite,
+                          content: Text('Annonce ajoutée avec succès !',
+                          style: TextStyle(color: Colors.green)),
                         ),
                       );
                       Navigator.of(context).pushReplacement(
@@ -93,7 +96,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Erreur lors de l\'ajout de l\'annonce.'),
+                          backgroundColor: CustomColors.tertiaryColorWhite,
+                          content: Text('Erreur lors de l\'ajout de l\'annonce.',
+                              style: TextStyle(color: Colors.red)),
                         ),
                       );
                     }
