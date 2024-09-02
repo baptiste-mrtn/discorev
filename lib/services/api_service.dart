@@ -26,10 +26,11 @@ class ApiService {
 
   Future<ResultApi> getAllData() async {
     await secureStorageService.ensureTokenValid();
-    final token = await secureStorageService.readToken();
 
+    final token = await secureStorageService.readToken();
     final url = await baseUrl;
 
+  try {
     final response = await http.get(
       Uri.parse(url),
       headers: <String, String>{
@@ -42,10 +43,14 @@ class ApiService {
 
     if (response.statusCode == 200) {
       print(json.decode(response.body));
-      return json.decode(response.body)['message'];
+      return ResultApi(success: true, message: response.body);
     } else {
       throw Exception('Failed to load data');
     }
+  } catch(err){
+    return ResultApi(success: false, message: '$err');
+  }
+
   }
 
   Future<ResultApi> getOneData(int id) async {
@@ -86,8 +91,6 @@ class ApiService {
       },
     );
 
-    print(json.decode(response.body));
-
     if (response.statusCode == 200) {
       print(json.decode(response.body));
       return json.decode(response.body)['message'];
@@ -108,7 +111,6 @@ class ApiService {
           'Authorization': 'Bearer $token',
         },
         body: entity);
-    print(json.decode(response.body));
 
     if (response.statusCode == 200) {
       print(json.decode(response.body));
@@ -131,7 +133,6 @@ class ApiService {
         'Authorization': 'Bearer $token',
       },
     );
-    print(json.decode(response.body));
 
     if (response.statusCode == 200) {
       print(json.decode(response.body));
@@ -157,7 +158,6 @@ class ApiService {
         body: data,
       );
 
-      print(response.body);
       if (response.statusCode == 200) {
         print(json.decode(response.body)['message']);
         return json.decode(response.body)['message'];

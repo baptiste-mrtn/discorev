@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:discorev/screens/recruiter/add_job_screen.dart';
 import 'package:discorev/widgets/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:discorev/services/job_service.dart';
@@ -19,23 +18,41 @@ class _AllJobsScreenState extends State<AllJobsScreen> {
   void initState() {
     super.initState();
     _jobsFuture = jobService.findAll();
+    print('jobs : $_jobsFuture');
   }
 
-  List<Map<String, dynamic>> parseJobs(String message) {
-    try {
-      final List<dynamic> jobsJson = jsonDecode(message);
-      return jobsJson.map((job) => job as Map<String, dynamic>).toList();
-    } catch (e) {
-      print('Erreur lors de l\'analyse des jobs: $e');
+  List<Map<String, dynamic>> parseJobs(dynamic message) {
+    print('Raw message to parse: $message'); // Imprimez pour vérifier ce que vous recevez
+
+    if (message is List) {
+      try {
+        // Si c'est déjà une liste, vous pouvez la caster directement
+        return message.map((job) => job as Map<String, dynamic>).toList();
+      } catch (e) {
+        print('Erreur lors de l\'analyse des annonces: $e');
+        return [];
+      }
+    } else if (message is String) {
+      try {
+        final List<dynamic> jobsJson = jsonDecode(message);
+        return jobsJson.map((job) => job as Map<String, dynamic>).toList();
+      } catch (e) {
+        print('Erreur lors de l\'analyse des annonces: $e');
+        return [];
+      }
+    } else {
+      print('Le type de message n\'est ni une chaîne JSON ni une liste');
       return [];
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tous les Jobs'),
+        title: const Text('Annonces'),
       ),
       body: FutureBuilder<ResultApi>(
         future: _jobsFuture,
@@ -44,10 +61,12 @@ class _AllJobsScreenState extends State<AllJobsScreen> {
             return SplashScreen();
           } else if (snapshot.hasError) {
             return Center(child: Text('Erreur: ${snapshot.error}'));
-          } else if (snapshot.hasData && snapshot.data!.success) {
+          } else if (snapshot.hasData) {
+            print('Snapshot data: ${snapshot.data}');
             final jobs = parseJobs(snapshot.data!.message);
+            print('Parsed jobs: $jobs');
             if (jobs.isEmpty) {
-              return const Center(child: Text('Aucun job disponible.'));
+              return const Center(child: Text('Aucune annonce disponible.'));
             } else {
               return ListView.builder(
                 itemCount: jobs.length,
@@ -87,7 +106,7 @@ class _AllJobsScreenState extends State<AllJobsScreen> {
           } else {
             return const Center(
                 child:
-                  Text('Aucune annonce trouvée'),
+                  Text('Une erreur est survenue.'),
             );
           }
         },
