@@ -1,7 +1,7 @@
 import 'package:discorev/models/custom_colors.dart';
 import 'package:discorev/screens/auth/login_screen.dart';
-import 'package:discorev/screens/messages.dart';
-import 'package:discorev/screens/profile.dart';
+import 'package:discorev/screens/messages_screen.dart';
+import 'package:discorev/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
@@ -24,13 +24,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               case 'Page 1':
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
                 );
                 break;
-              case 'Page 2':
+              case 'Paramètres':
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MessagesPage()),
+                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
                 );
                 break;
               case 'Déconnexion':

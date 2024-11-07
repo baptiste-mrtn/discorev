@@ -3,12 +3,12 @@ import 'package:discorev/widgets/bottom_navbar.dart';
 import 'package:discorev/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 
-import 'all_jobs_screen.dart';
+import 'my_jobs_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String? jobTitle; // Si un job est disponible, sinon null
 
-  const DashboardScreen({this.jobTitle});
+  const DashboardScreen({super.key, this.jobTitle});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: CustomAppBar(titleAppbar: 'Tableau de bord'),
-      bottomNavigationBar: const BottomNavbar(initialIndex: 2),
+      bottomNavigationBar: const BottomNavbar(initialIndex: 1),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -97,7 +97,7 @@ class DashboardScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => AllJobsScreen(),
+                              builder: (context) => const MyJobsScreen(),
                             ),
                           );
                         },

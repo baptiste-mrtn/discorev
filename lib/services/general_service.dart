@@ -2,30 +2,40 @@ import 'package:discorev/services/api_service.dart';
 
 import '../models/result_api.dart';
 
-class JobService {
-  ApiService apiService = ApiService(endpoint: '/jobs');
+class GeneralService {
+  String endpoint;
+  late ApiService apiService;
 
-  Future<ResultApi> findAll() async {
+  GeneralService(this.endpoint){
+    apiService = ApiService(endpoint: endpoint);
+  }
+
+  Future findAll() async {
     final response = await apiService.getAllData();
     return response;
   }
 
-  Future<ResultApi> findOne(int id) async {
+  Future findOne(int id) async {
     final response = await apiService.getOneData(id);
     return response;
   }
 
-  Future<ResultApi> addOne(Object body) async {
+  Future findOneBy(String term) async {
+    final response = await apiService.getOneDataBy(term);
+    return response;
+  }
+
+  Future addOne(Object body) async {
     final response = await apiService.postData(body);
     return response;
   }
 
-  Future<ResultApi> updateOne(int id, Object body) async {
+  Future updateOne(int id, Object body) async {
     final response = await apiService.updateOneData(id, body);
     return response;
   }
 
-  Future<ResultApi> deleteOne(int id, Object body) async {
+  Future deleteOne(int id, Object body) async {
     final response = await apiService.deleteOneData(id);
     return response;
   }

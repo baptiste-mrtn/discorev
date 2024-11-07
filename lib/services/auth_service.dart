@@ -1,16 +1,15 @@
 import 'package:discorev/models/result_api.dart';
-import 'package:discorev/services/user_service.dart';
+import 'package:discorev/services/general_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'company_service.dart';
 import 'security_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthService {
   final SecurityService secureStorageService = SecurityService();
-  final CompanyService companyService = CompanyService();
-  final UserService userService = UserService();
+  final GeneralService companyService = GeneralService('/companies');
+  final GeneralService userService = GeneralService('/users');
 
   Future<void> loadEnv() async {
     await dotenv.load(fileName: ".env");
@@ -72,10 +71,14 @@ class AuthService {
           'company_description': companyDescription,
           'company_industry': companySector,
         };
-        await companyService.addOne(requestBodyCompany).then((value) => {
-          // TODO: change value to response company_id
-          requestBody['company_id'] = 1
-        });
+        final responseCompany = await companyService.addOne(requestBodyCompany);
+        if(responseCompany.success){
+          // TODO: replace "1" with response company id
+          requestBody['company_id'] = 1;
+          return ResultApi(success: true, message: "Company created");
+        } else {
+          return ResultApi(success: false, message: "Error occurred on company creation");
+        }
       } else {
         // Gérer l'erreur si les informations de l'entreprise sont manquantes
         return ResultApi(success: false, message: "Company details are required for recruiters.");
@@ -125,6 +128,7 @@ class AuthService {
 
   Future<bool> isLogged() async {
     String? token = await secureStorageService.readToken();
+
     return token != null && token.isNotEmpty;
   }
 }

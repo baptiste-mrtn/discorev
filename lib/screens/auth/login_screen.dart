@@ -2,7 +2,7 @@ import 'package:discorev/screens/auth/choice_account_type_screen.dart';
 import 'package:discorev/screens/auth/forgotten_password_screen.dart';
 import 'package:discorev/screens/home_screen.dart';
 import 'package:discorev/services/auth_service.dart';
-import 'package:discorev/services/user_service.dart';
+import 'package:discorev/services/general_service.dart';
 import 'package:discorev/widgets/title_logo.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +16,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final AuthService authService = AuthService();
-  final UserService userService = UserService();
+  final GeneralService userService = GeneralService('users');
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,7 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('Connexion'),
-
         ),
         body: Column(children: [
           const TitleLogo(),
@@ -77,8 +76,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             _passwordController.text,
                           );
                           if (response.success) {
-                            // TODO: décommenter pour récupérer les données de l'user
-                            // await userService.findOneBy(_emailController.text); // Assurez-vous que les données sont prêtes
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 backgroundColor: CustomColors.tertiaryColorWhite,
@@ -120,11 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: const Text(
-                            'Mot de passe oublié',
-                            style: TextStyle(
-                              color: CustomColors.primaryColorYellow,
-                              fontSize: 16.0,
-                            ),
+                            'Mot de passe oublié'
                           )),
                       TextButton(
                           onPressed: () async {
@@ -136,11 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: const Text(
-                            'Créer mon compte',
-                            style: TextStyle(
-                              color: CustomColors.primaryColorYellow,
-                              fontSize: 16.0,
-                            ),
+                            'Créer mon compte'
                           )),
                     ]),
                   ],

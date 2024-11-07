@@ -60,12 +60,21 @@ class _MyAppState extends State<MyApp> {
                       BorderSide(color: CustomColors.secondaryColorBlue),
                     ),
                     focusColor: CustomColors.primaryColorBlue),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                      color: CustomColors.secondaryColorBlue,
+                      fontSize: 16.0,
+                    ),
+                      foregroundColor: CustomColors.primaryColorBlue
+                  )
+                ),
                 elevatedButtonTheme: ElevatedButtonThemeData(
                     style: ElevatedButton.styleFrom(
                         textStyle: const TextStyle(
                           color: CustomColors.tertiaryColorWhite,
                         ),
-                        backgroundColor: CustomColors.primaryColorYellow,
+                        backgroundColor: CustomColors.primaryColorBlue,
                         foregroundColor: CustomColors.tertiaryColorWhite))),
             home: _isFirstLaunch
                 ? SplashScreenWrapper(

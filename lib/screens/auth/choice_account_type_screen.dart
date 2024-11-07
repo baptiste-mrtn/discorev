@@ -68,11 +68,7 @@ class ChoiceAccountTypeScreen extends StatelessWidget {
                         );
                       },
                       child: const Text(
-                        'J\'ai déjà un compte',
-                        style: TextStyle(
-                          color: CustomColors.primaryColorYellow,
-                          fontSize: 16.0,
-                        ),
+                        'J\'ai déjà un compte'
                       )),
                 )
               ],

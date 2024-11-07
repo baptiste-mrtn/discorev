@@ -2,11 +2,10 @@ import 'package:discorev/screens/auth/login_screen.dart';
 import 'package:discorev/services/auth_service.dart';
 import 'package:discorev/widgets/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:discorev/screens/candidate/announce_list_screen.dart';
 import 'package:discorev/screens/recruiter/dashboard_screen.dart';
 
-import '../services/security_service.dart';
 import '../services/user_service.dart';
+import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,12 +13,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final SecurityService secureStorageService = SecurityService();
   final AuthService authService = AuthService();
-  final UserService userService = UserService();
+  final UserService userService = UserService('/users');
 
   bool isLoading = true;
-  bool? isLogged;
+  bool isLogged = false; // Valeur par défaut false
   int? accountType;
 
   @override
@@ -29,12 +27,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeData() async {
-    isLogged = await authService.isLogged();
-    if (isLogged!) {
-      //TODO: decommenter une fois le back mis a jour
-      //accountType = await userService.getAccountType();
-      accountType=2;
+    // Vérifie si l'utilisateur est connecté
+    isLogged = await authService.isLogged() ?? false;
+    print('isLogged = $isLogged'); // Debug
+
+    if (isLogged) {
+      // TODO : decommenter une fois la route findOneBy(term) créée
+      // accountType = await userService.getAccountType();
+      accountType = 2;
+      print('accountType = $accountType'); // Debug
     }
+
     setState(() {
       isLoading = false;
     });
@@ -45,8 +48,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (isLoading) {
       return SplashScreen();
     } else if (isLogged == true && accountType == 1) {
-      return const AnnounceListScreen();
+      print("candidat");
+      return const SearchScreen();
     } else if (isLogged == true && accountType == 2) {
+      print("recruteur");
       return const DashboardScreen();
     } else {
       return LoginScreen();

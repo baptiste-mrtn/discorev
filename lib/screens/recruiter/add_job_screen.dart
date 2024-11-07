@@ -1,7 +1,9 @@
 import 'package:discorev/models/custom_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:discorev/services/job_service.dart';
+import 'package:discorev/services/general_service.dart';
 import 'package:discorev/screens/recruiter/dashboard_screen.dart';
+
+import '../../widgets/bottom_navbar.dart';
 
 class AddJobScreen extends StatefulWidget {
   const AddJobScreen({super.key});
@@ -15,14 +17,15 @@ class _AddJobScreenState extends State<AddJobScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _salaryRangeController = TextEditingController();
-  final JobService jobService = JobService();
+  final GeneralService jobService = GeneralService('/jobs');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajouter un Job'),
+        title: const Text('Publier une annonce'),
       ),
+      bottomNavigationBar: const BottomNavbar(initialIndex: 2),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Form(

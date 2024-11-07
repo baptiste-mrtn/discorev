@@ -30,27 +30,26 @@ class ApiService {
     final token = await secureStorageService.readToken();
     final url = await baseUrl;
 
-  try {
-    final response = await http.get(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-    print(json.decode(response.body));
-
-    if (response.statusCode == 200) {
       print(json.decode(response.body));
-      return ResultApi(success: true, message: response.body);
-    } else {
-      throw Exception('Failed to load data');
-    }
-  } catch(err){
-    return ResultApi(success: false, message: '$err');
-  }
 
+      if (response.statusCode == 200) {
+        print(json.decode(response.body));
+        return ResultApi(success: true, message: response.body);
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (err) {
+      return ResultApi(success: false, message: '$err');
+    }
   }
 
   Future<ResultApi> getOneData(int id) async {
@@ -159,7 +158,8 @@ class ApiService {
       );
 
       if (response.statusCode == 201) {
-        return ResultApi(success: true, message: json.decode(response.body)['message']);
+        return ResultApi(
+            success: true, message: json.decode(response.body)['message']);
       } else {
         throw Exception('Failed to post data');
       }
