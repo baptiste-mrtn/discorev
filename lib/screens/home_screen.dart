@@ -1,5 +1,5 @@
 import 'package:discorev/screens/auth/login_screen.dart';
-import 'package:discorev/services/auth_service.dart';
+import 'package:discorev/services/auth_token_service.dart';
 import 'package:discorev/widgets/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:discorev/screens/recruiter/dashboard_screen.dart';
@@ -13,11 +13,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final AuthService authService = AuthService();
-  final UserService userService = UserService('/users');
+  final AuthTokenService authTokenService = AuthTokenService();
+  final UserService userService = UserService();
+  final AuthTokenService securityService = AuthTokenService();
 
   bool isLoading = true;
-  bool isLogged = false; // Valeur par défaut false
+  bool isLogged = false;
   int? accountType;
 
   @override
@@ -28,33 +29,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initializeData() async {
     // Vérifie si l'utilisateur est connecté
-    isLogged = await authService.isLogged() ?? false;
-    print('isLogged = $isLogged'); // Debug
+    isLogged = await authTokenService.isTokenValid();
 
     if (isLogged) {
-      // TODO : decommenter une fois la route findOneBy(term) créée
-      // accountType = await userService.getAccountType();
-      accountType = 2;
-      print('accountType = $accountType'); // Debug
-    }
+      try{
+        accountType = await userService.getAccountType();
+      } catch(e){
+        print("Erreur lors de la récupération du type de compte : $e");
+      }
 
-    setState(() {
-      isLoading = false;
-    });
+      // Rediriger selon le type de compte
+      if (accountType == 1) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchScreen()),
+        );
+      } else if (accountType == 2) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
+      }
+    } else {
+      // Rediriger vers l'écran de connexion si l'utilisateur n'est pas connecté
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return SplashScreen();
-    } else if (isLogged == true && accountType == 1) {
-      print("candidat");
-      return const SearchScreen();
-    } else if (isLogged == true && accountType == 2) {
-      print("recruteur");
-      return const DashboardScreen();
-    } else {
-      return LoginScreen();
-    }
+    return isLoading ? SplashScreen() : Container(); // L'écran de redirection sera géré dans `_initializeData`
   }
+
 }

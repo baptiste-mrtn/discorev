@@ -1,57 +1,37 @@
-import 'dart:convert';
-
-// Définition de la classe User
 class User {
   final int id;
   final String name;
   final String email;
-  final int roleId;
+  final int roleId; // Peut être null
+  final int? companyId; // Peut être null
 
   User({
     required this.id,
     required this.name,
     required this.email,
     required this.roleId,
+    this.companyId,
   });
 
-  // Méthode pour convertir un objet User en Map
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'roleId': roleId
-    };
-  }
-
-  // Méthode pour créer un objet User à partir d'un Map
-  factory User.fromMap(Map<String, dynamic> map) {
+  // Méthode pour convertir un JSON en objet User
+  factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: map['id'],
-      name: map['name'],
-      email: map['email'],
-      roleId: map['roleId'],
+      id: json['id'] ?? 0, // Valeur par défaut si null
+      name: json['name'] ?? 'Unknown', // Valeur par défaut si null
+      email: json['email'] ?? 'no-email@example.com', // Valeur par défaut si null
+      roleId: json['role_id'], // Accepte null
+      companyId: json['company_id'], // Accepte null
     );
   }
 
   // Méthode pour convertir un objet User en JSON
-  String toJson() => json.encode(toMap());
-
-  // Méthode pour créer un objet User à partir d'un JSON
-  factory User.fromJson(String source) => User.fromMap(json.decode(source));
-}
-
-void main() {
-  // Exemple d'utilisation de la classe User
-
-  // Créer un utilisateur
-  User user = User(id: 1, name: 'John Doe', email: 'john.doe@example.com', roleId: 1);
-
-  // Convertir l'utilisateur en JSON
-  String userJson = user.toJson();
-  print('User en JSON: $userJson');
-
-  // Créer un utilisateur à partir d'un JSON
-  User newUser = User.fromJson(userJson);
-  print('Nouvel utilisateur: ${newUser.name}, ${newUser.email}');
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'role_id': roleId,
+      'company_id': companyId,
+    };
+  }
 }

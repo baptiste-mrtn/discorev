@@ -1,15 +1,19 @@
 import 'package:discorev/models/result_api.dart';
 import 'package:discorev/services/general_service.dart';
+import 'package:discorev/services/user_service.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'security_service.dart';
+import '../models/company.dart';
+import '../models/user.dart';
+import 'auth_token_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
-  final SecurityService secureStorageService = SecurityService();
+  final AuthTokenService authTokenService = AuthTokenService();
   final GeneralService companyService = GeneralService('/companies');
-  final GeneralService userService = GeneralService('/users');
+  final UserService userService = UserService();
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
   Future<void> loadEnv() async {
     await dotenv.load(fileName: ".env");
@@ -23,68 +27,110 @@ class AuthService {
     }
     return '$apiUrl/auth';
   }
-
   Future<ResultApi> login(String email, String password) async {
-    final url = await baseUrl;
-    final response = await http.post(
-      Uri.parse('$url/login'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'email': email, 'password': password}),
-    );
+    try {
+      final url = await baseUrl;
+      final response = await http.post(
+        Uri.parse('$url/login'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'email': email, 'password': password}),
+      );
 
-    final message = jsonDecode(response.body)['message'];
+      final body = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      String token = data['token'];
-      DateTime now = DateTime.now();
-      DateTime futureDate = now.add(const Duration(hours: 1));
+      // Récupération du message renvoyé par l'API
+      final message = body['message'];
 
-      secureStorageService.saveToken(token, futureDate);
+      if (response.statusCode == 200) {
+        // Extraction des données de l'utilisateur et du token
+        final String token = body['token'];
+        final userJson = body['user'];
 
-      userService.findOneBy(email);
-      print(token);
-      return ResultApi(success: true, message: message);
-    } else {
-      print('Erreur: ${response.statusCode}, $message');
-      return ResultApi(success: false, message: message);
+        // Désérialisation en objet User
+        final User user = User.fromJson(userJson);
+
+        // Gestion du token sécurisé avec une durée de validité
+        DateTime now = DateTime.now();
+        DateTime futureDate = now.add(const Duration(hours: 1));
+
+        // Sauvegarde du token et de la date d'expiration
+        await authTokenService.saveToken(token, futureDate);
+
+        // Configuration des informations utilisateur dans UserService
+        userService.setUserInfos(user);
+        userService.setAccountType(user.roleId);
+
+        return ResultApi(success: true, message: message);
+      } else {
+        // En cas de réponse différente de 200
+        return ResultApi(success: false, message: message);
+      }
+    } catch (e) {
+      // Gestion des exceptions imprévues
+      return ResultApi(success: false, message: 'Une erreur inattendue est survenue.');
     }
   }
 
-  Future<ResultApi> register(String email, String password, String name, String surname, {required int roleId, String? companyName, int? companySiren, String? companyDescription, String? companySector}) async {
+
+
+  Future<ResultApi> register(
+      String email,
+      String password,
+      String name,
+      String surname, {
+        required int roleId,
+        String? companyName,
+        int? companySiren,
+        String? companyDescription,
+        String? companySector,
+      }) async {
     final url = await baseUrl;
+
+    // Préparer le corps de la requête utilisateur
     Map<String, dynamic> requestBody = {
       'email': email,
       'password': password,
       'name': '$surname $name',
       'role_id': roleId,
-      'company_id': 1
+      'company_id': 1, // Par défaut jusqu'à la création d'une entreprise
     };
+
+    // Gestion des recruteurs avec création d'entreprise
+    Company? createdCompany; // Pour stocker l'entreprise créée
 
     if (roleId == 2) {
       if (companyName != null && companySiren != null) {
-        Map<String, dynamic> requestBodyCompany = {
-          'company_name': companyName,
-          'company_siren': companySiren,
-          'company_description': companyDescription,
-          'company_industry': companySector,
-        };
-        final responseCompany = await companyService.addOne(requestBodyCompany);
-        if(responseCompany.success){
-          // TODO: replace "1" with response company id
-          requestBody['company_id'] = 1;
-          return ResultApi(success: true, message: "Company created");
+        Company newCompany = Company(
+          id: 0, // ID temporaire avant création
+          name: companyName,
+          siren: companySiren,
+          description: companyDescription,
+          sector: companySector,
+        );
+
+        // Appeler le service pour créer une entreprise
+        final responseCompany = await companyService.addOne(newCompany.toJson());
+        if (responseCompany.success) {
+          createdCompany = Company.fromJson(responseCompany.data);
+          requestBody['company_id'] = createdCompany.id;
         } else {
-          return ResultApi(success: false, message: "Error occurred on company creation");
+          return ResultApi(
+            success: false,
+            message: "Error occurred while creating the company: ${responseCompany.message}",
+          );
         }
       } else {
         // Gérer l'erreur si les informations de l'entreprise sont manquantes
-        return ResultApi(success: false, message: "Company details are required for recruiters.");
+        return ResultApi(
+          success: false,
+          message: "Company details are required for recruiters.",
+        );
       }
     }
 
+    // Envoyer la requête d'inscription
     final response = await http.post(
       Uri.parse('$url/signup'),
       headers: {
@@ -93,10 +139,26 @@ class AuthService {
       body: jsonEncode(requestBody),
     );
 
-    final message = jsonDecode(response.body)['message'];
+    final decodedResponse = jsonDecode(response.body);
+    final message = decodedResponse['message'];
 
     if (response.statusCode == 201) {
-      return ResultApi(success: true, message: message);
+      // Map des données utilisateur pour le modèle User
+      final userData = decodedResponse['user'];
+      final user = User.fromJson(userData);
+
+      // Sauvegarde des informations utilisateur et token
+      String token = decodedResponse['token'];
+      DateTime now = DateTime.now();
+      DateTime futureDate = now.add(const Duration(hours: 1));
+      await authTokenService.saveToken(token, futureDate);
+      userService.setUserInfos(user);
+      userService.setAccountType(user.roleId);
+
+      return ResultApi(
+        success: true,
+        message: message,
+      );
     } else {
       print('Erreur: ${response.statusCode}, $message');
       return ResultApi(success: false, message: message);
@@ -120,15 +182,21 @@ class AuthService {
   }
 
   Future logout() async {
-    secureStorageService.deleteToken();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('authToken');
-    await prefs.remove('accountType');
+    authTokenService.deleteToken();
+    secureStorage.deleteAll();
   }
-
-  Future<bool> isLogged() async {
-    String? token = await secureStorageService.readToken();
-
-    return token != null && token.isNotEmpty;
-  }
+  //
+  // Future<bool> isLogged() async {
+  //   try {
+  //     bool token = await authTokenService.isTokenValid();
+  //     if (token) {
+  //       print("Token valid.");
+  //       return true;
+  //     }
+  //     return false;
+  //   } catch (e) {
+  //     print("Erreur lors de la verification du token: $e");
+  //     return false;
+  //   }
+  // }
 }

@@ -93,7 +93,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                       );
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (context) => const DashboardScreen(),
+                          builder: (context) => DashboardScreen(),
                         ),
                       );
                     } else {

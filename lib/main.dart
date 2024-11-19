@@ -1,3 +1,4 @@
+
 import 'package:discorev/models/custom_colors.dart';
 import 'package:discorev/providers/auth.dart';
 import 'package:discorev/screens/auth/choice_account_type_screen.dart';
@@ -131,5 +132,6 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
 }
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }

@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:discorev/models/result_api.dart';
-import 'package:discorev/services/security_service.dart';
+import 'package:discorev/services/auth_token_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String endpoint;
-  final SecurityService secureStorageService = SecurityService();
+  late final String endpoint;
+  final AuthTokenService secureStorageService = AuthTokenService();
 
   ApiService({required this.endpoint});
 
